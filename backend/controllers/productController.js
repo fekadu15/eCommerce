@@ -55,7 +55,6 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Check ownership
     if (product.seller.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
@@ -86,7 +85,6 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Check ownership
     if (product.seller.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }

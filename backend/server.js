@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const { protect } = require("./middleware/authMiddleware");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 dotenv.config();
 
 connectDB();
@@ -16,9 +17,10 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.get("/", (req, res) => {
-  res.send("API running");
+  res.send(" API running");
 });
 app.get("/api/test", protect, (req, res) => {
   res.json({ message: "Protected route accessed", user: req.user });
