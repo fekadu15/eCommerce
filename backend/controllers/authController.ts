@@ -3,16 +3,16 @@ import User from "../models/User";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken";
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: Response , next:any) => {
   try {
     const { name, email, password } = req.body;
 
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex || !emailRegex.test(email)) {
+    if (!emailRegex.test(email)){
       return res.status(400).json({ message: "Please provide a valid email address" });
     }
 
-    if (!name || !password || !password) {
+    if (!name || !password || !email) {
       return res.status(400).json({ message: "Please provide all required fields" });
     }
 
@@ -38,11 +38,11 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };
 
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser = async (req: Request, res: Response , next:any) => {
   try {
     const { email, password } = req.body;
 
@@ -66,6 +66,6 @@ export const loginUser = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };

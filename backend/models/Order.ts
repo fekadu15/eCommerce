@@ -10,6 +10,11 @@ export interface IOrder extends Document {
   items: IOrderItem[];
   totalPrice: number;
   status: string;
+
+  paymentStatus: "pending" | "paid" | "failed";
+  paymentMethod: "card" | "cash";
+  paidAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,7 +28,22 @@ const orderItemSchema: Schema = new Schema({
   quantity: {
     type: Number,
     required: true
-  }
+  },
+  paymentStatus: {
+  type: String,
+  enum: ["pending", "paid", "failed"],
+  default: "pending"
+},
+
+paymentMethod: {
+  type: String,
+  enum: ["card", "cash"],
+  required: true
+},
+
+paidAt: {
+  type: Date
+}
 });
 
 const orderSchema: Schema<IOrder> = new Schema(
@@ -41,7 +61,23 @@ const orderSchema: Schema<IOrder> = new Schema(
     status: {
       type: String,
       default: "pending"
+    },
+
+    
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending"
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["card", "cash"],
+      required: true
+    },
+    paidAt: {
+      type: Date
     }
+
   },
   { timestamps: true }
 );

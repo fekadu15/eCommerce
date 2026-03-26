@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Cart from "../models/Cart";
 
-export const addToCart = async (req: Request, res: Response) => {
+export const addToCart = async (req: Request, res: Response ,next:any) => {
   try {
     const { productId, quantity } = req.body;
 
@@ -27,22 +27,22 @@ export const addToCart = async (req: Request, res: Response) => {
     await cart.save();
     res.json(cart);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };
 
-export const getCart = async (req: Request, res: Response) => {
+export const getCart = async (req: Request, res: Response , next:any) => {
   try {
     const cart = await Cart.findOne({ user: (req as any).user._id })
       .populate("items.product");
 
     res.json(cart);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };
 
-export const removeFromCart = async (req: Request, res: Response) => {
+export const removeFromCart = async (req: Request, res: Response , next:any) => {
   try {
     const { productId } = req.body;
 
@@ -59,6 +59,6 @@ export const removeFromCart = async (req: Request, res: Response) => {
     await cart.save();
     res.json(cart);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Product from "../models/Product";
 
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response ,next:any) => {
   try {
     const { name, description, price, stock, image } = req.body;
 
@@ -16,20 +16,20 @@ export const createProduct = async (req: Request, res: Response) => {
 
     res.status(201).json(product);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };
 
-export const getProducts = async (req: Request, res: Response) => {
+export const getProducts = async (req: Request, res: Response , next:any) => {
   try {
     const products = await Product.find().populate("seller", "name email");
     res.status(200).json(products);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };
 
-export const getProductById = async (req: Request, res: Response) => {
+export const getProductById = async (req: Request, res: Response , next:any) => {
   try {
     const product = await Product.findById(req.params.id).populate("seller", "name email");
 
@@ -39,11 +39,11 @@ export const getProductById = async (req: Request, res: Response) => {
 
     res.status(200).json(product);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (req: Request, res: Response , next:any) => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -66,11 +66,11 @@ export const updateProduct = async (req: Request, res: Response) => {
     const updatedProduct = await product.save();
     res.json(updatedProduct);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response , next :any) => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -85,6 +85,6 @@ export const deleteProduct = async (req: Request, res: Response) => {
     await product.deleteOne();
     res.json({ message: "Product removed" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  next(error);
+}
 };

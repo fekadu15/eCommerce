@@ -1,9 +1,19 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const { checkout } = require("../controllers/orderController");
-const { protect } = require("../middleware/authMiddleware");
+import {
+  checkout,
+  getMyOrders,
+  getAllOrders,
+  updateOrderStatus
+} from "../controllers/orderController";
+
+import { protect, isAdmin } from "../middleware/authMiddleware";
 
 router.post("/checkout", protect, checkout);
+router.get("/my-orders", protect, getMyOrders);
 
- export default router;
+router.get("/", protect, isAdmin, getAllOrders);
+router.put("/:id", protect, isAdmin, updateOrderStatus);
+
+export default router;

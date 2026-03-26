@@ -31,3 +31,10 @@ export const isSeller = (req: Request, res: Response, next: NextFunction) => {
     res.status(403).json({ message: "Seller access required" });
   }
 };
+export const isAdmin = (req: Request, res: Response, next: any) => {
+  if ((req as any).user && (req as any).user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Admin access required" });
+  }
+};
