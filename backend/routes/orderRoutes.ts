@@ -6,4 +6,4 @@ const { protect } = require("../middleware/authMiddleware");
 
 router.post("/checkout", protect, checkout);
 
-module.exports = router;
+ export default router;

@@ -1,8 +1,8 @@
-const Product = require("../models/Product");
+import { Request, Response } from "express";
+import Product from "../models/Product";
 
-exports.createProduct = async (req, res) => {
+export const createProduct = async (req: Request, res: Response) => {
   try {
-
     const { name, description, price, stock, image } = req.body;
 
     const product = await Product.create({
@@ -11,29 +11,26 @@ exports.createProduct = async (req, res) => {
       price,
       stock,
       image,
-      seller: req.user._id
+      seller: (req as any).user._id
     });
 
     res.status(201).json(product);
-
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
-exports.getProducts = async (req, res) => {
-  try {
 
+export const getProducts = async (req: Request, res: Response) => {
+  try {
     const products = await Product.find().populate("seller", "name email");
-
     res.status(200).json(products);
-
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
-exports.getProductById = async (req, res) => {
-  try {
 
+export const getProductById = async (req: Request, res: Response) => {
+  try {
     const product = await Product.findById(req.params.id).populate("seller", "name email");
 
     if (!product) {
@@ -41,21 +38,20 @@ exports.getProductById = async (req, res) => {
     }
 
     res.status(200).json(product);
-
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
-exports.updateProduct = async (req, res) => {
-  try {
 
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
     const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (product.seller.toString() !== req.user._id.toString()) {
+    if (product.seller.toString() !== (req as any).user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
@@ -68,32 +64,27 @@ exports.updateProduct = async (req, res) => {
     product.image = image || product.image;
 
     const updatedProduct = await product.save();
-
     res.json(updatedProduct);
-
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-exports.deleteProduct = async (req, res) => {
+export const deleteProduct = async (req: Request, res: Response) => {
   try {
-
     const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (product.seller.toString() !== req.user._id.toString()) {
+    if (product.seller.toString() !== (req as any).user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
     await product.deleteOne();
-
     res.json({ message: "Product removed" });
-
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };

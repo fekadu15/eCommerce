@@ -18,4 +18,4 @@ router.delete("/:id", protect, isSeller, deleteProduct);
 
 router.post("/", protect, isSeller, createProduct);
 
-module.exports = router;
+export default router;

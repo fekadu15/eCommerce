@@ -13,4 +13,4 @@ router.post("/", protect, addToCart);
 router.get("/", protect, getCart);
 router.delete("/", protect, removeFromCart);
 
-module.exports = router;
+export default router;
