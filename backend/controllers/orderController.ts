@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Cart from "../models/Cart";
 import Order from "../models/Order";
 import Product from "../models/Product";
-import { simulatePayment } from "../utils/paymentService";
+import { createPaymentIntent } from "../utils/paymentService";
 
 export const checkout = async (req: Request, res: Response, next: any) => {
   try {
@@ -63,6 +63,27 @@ export const checkout = async (req: Request, res: Response, next: any) => {
   }
 };
 
+export const createPayment = async (req: Request, res: Response, next: any) => {
+  try {
+    const { orderId } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const paymentIntent = await createPaymentIntent(order.totalPrice);
+
+    res.json({
+      clientSecret: paymentIntent.client_secret
+    });
+
+  } catch (error: any) {
+    next(error);
+  }
+};
+
 export const processPayment = async (req: Request, res: Response, next: any) => {
   try {
     const { orderId } = req.body;
@@ -73,15 +94,6 @@ export const processPayment = async (req: Request, res: Response, next: any) => 
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const paymentResult = await simulatePayment();
-
-    if (paymentResult.status !== "success") {
-      order.paymentStatus = "failed";
-      await order.save();
-
-      return res.status(400).json({ message: "Payment failed" });
-    }
-
     order.paymentStatus = "paid";
     order.paidAt = new Date();
 
@@ -89,7 +101,6 @@ export const processPayment = async (req: Request, res: Response, next: any) => 
 
     res.json({
       message: "Payment successful",
-      transactionId: paymentResult.transactionId,
       order
     });
 
