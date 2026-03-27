@@ -1,13 +1,13 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   addToCart,
   getCart,
   removeFromCart
-} = require("../controllers/cartController");
+} from "../controllers/cartController";
 
-const { protect } = require("../middleware/authMiddleware");
+import { protect } from"../middleware/authMiddleware";
 
 router.post("/", protect, addToCart);
 router.get("/", protect, getCart);

@@ -9,7 +9,7 @@ export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
   items: IOrderItem[];
   totalPrice: number;
-  status: string;
+  status: "pending" | "shipped" | "delivered";
 
   paymentStatus: "pending" | "paid" | "failed";
   paymentMethod: "card" | "cash";
@@ -28,22 +28,7 @@ const orderItemSchema: Schema = new Schema({
   quantity: {
     type: Number,
     required: true
-  },
-  paymentStatus: {
-  type: String,
-  enum: ["pending", "paid", "failed"],
-  default: "pending"
-},
-
-paymentMethod: {
-  type: String,
-  enum: ["card", "cash"],
-  required: true
-},
-
-paidAt: {
-  type: Date
-}
+  }
 });
 
 const orderSchema: Schema<IOrder> = new Schema(
@@ -60,10 +45,11 @@ const orderSchema: Schema<IOrder> = new Schema(
     },
     status: {
       type: String,
+      enum: ["pending", "shipped", "delivered"],
       default: "pending"
     },
 
-    
+   
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],

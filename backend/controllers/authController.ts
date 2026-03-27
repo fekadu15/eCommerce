@@ -19,7 +19,7 @@ export const registerUser = async (req: Request, res: Response , next:any) => {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already exists try log in" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,7 +49,7 @@ export const loginUser = async (req: Request, res: Response , next:any) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "has no an account create one" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

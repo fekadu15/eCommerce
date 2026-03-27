@@ -1,14 +1,14 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const {
+import {
   createProduct,
   getProducts,
   getProductById,
   updateProduct,
   deleteProduct
-} = require("../controllers/productController");
+} from "../controllers/productController";
 
-const { protect, isSeller } = require("../middleware/authMiddleware");
+import { protect, isSeller } from "../middleware/authMiddleware";
 
 
 router.get("/", getProducts);
