@@ -5,33 +5,31 @@ export interface IProduct extends Document {
   description: string;
   price: number;
   stock: number;
-  image?: string;
+  image: String,
   seller: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const productSchema: Schema<IProduct> = new Schema(
+const productSchema = new Schema<IProduct>(
   {
     name: {
-      type: String,
-      required: true
-    },
+       type: String,
+        required: true 
+      },
     description: {
-      type: String,
-      required: true
+       type: String, 
+       required: true
+       },
+    price: { 
+      type: Number, 
+      required: true 
     },
-    price: {
-      type: Number,
-      required: true
+    stock: { 
+      type: Number, 
+      required: true 
     },
-    stock: {
-      type: Number,
-      required: true
-    },
-    image: {
-      type: String
-    },
+    image: { type: String},
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

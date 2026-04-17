@@ -1,12 +1,18 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import Cart from "../models/Cart";
 import Order from "../models/Order";
 import User from "../models/User";
 import Product from "../models/Product";
+import { ICartPopulated } from "../types/cart";
+import { CheckoutBody, PaymentBody, UpdateOrderStatusBody } from "../types/order";
 import { createPaymentIntent } from "../utils/paymentService";
 import { sendOrderEmail } from "../utils/emailService";
 
-export const checkout = async (req: Request, res: Response, next: any) => {
+export const checkout = async (
+  req: Request<{}, {}, CheckoutBody>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { paymentMethod, selectedItems } = req.body;
 
@@ -18,13 +24,15 @@ export const checkout = async (req: Request, res: Response, next: any) => {
       return res.status(400).json({ message: "No items selected for checkout" });
     }
 
-    const cart = await Cart.findOne({ user: (req as any).user._id }).populate("items.product");
+    const cart = (await Cart.findOne({ user: req.user?._id }).populate(
+      "items.product"
+    )) as ICartPopulated | null;
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    const itemsToOrder = cart.items.filter((item: any) =>
+    const itemsToOrder = cart.items.filter((item) =>
       selectedItems.includes(item._id.toString())
     );
 
@@ -34,8 +42,8 @@ export const checkout = async (req: Request, res: Response, next: any) => {
 
     let totalPrice = 0;
 
-    for (let item of itemsToOrder) {
-      const product = item.product as any;
+    for (const item of itemsToOrder) {
+      const product = item.product;
 
       if (product.stock < item.quantity) {
         return res.status(400).json({
@@ -46,8 +54,9 @@ export const checkout = async (req: Request, res: Response, next: any) => {
       totalPrice += product.price * item.quantity;
     }
 
-    for (let item of itemsToOrder) {
-      const product = await Product.findById((item.product as any)._id);
+    for (const item of itemsToOrder) {
+      const product = await Product.findById(item.product._id);
+
       if (product) {
         product.stock -= item.quantity;
         await product.save();
@@ -55,8 +64,8 @@ export const checkout = async (req: Request, res: Response, next: any) => {
     }
 
     const order = await Order.create({
-      user: (req as any).user._id,
-      items: itemsToOrder.map((item: any) => ({
+      user: req.user?._id,
+      items: itemsToOrder.map((item) => ({
         product: item.product._id,
         quantity: item.quantity,
       })),
@@ -66,17 +75,22 @@ export const checkout = async (req: Request, res: Response, next: any) => {
     });
 
     cart.items = cart.items.filter(
-      (item: any) => !selectedItems.includes(item._id.toString())
+      (item) => !selectedItems.includes(item._id.toString())
     );
+
     await cart.save();
 
     res.status(201).json(order);
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };
 
-export const createPayment = async (req: Request, res: Response, next: any) => {
+export const createPayment = async (
+  req: Request<{}, {}, PaymentBody>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { orderId } = req.body;
 
@@ -91,12 +105,16 @@ export const createPayment = async (req: Request, res: Response, next: any) => {
     res.json({
       clientSecret: paymentIntent.client_secret,
     });
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };
 
-export const processPayment = async (req: Request, res: Response, next: any) => {
+export const processPayment = async (
+  req: Request<{}, {}, PaymentBody>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { orderId } = req.body;
 
@@ -111,11 +129,6 @@ export const processPayment = async (req: Request, res: Response, next: any) => 
 
     await order.save();
 
-    res.json({
-      message: "Payment successful",
-      order,
-    });
-
     const user = await User.findById(order.user);
 
     if (user) {
@@ -125,36 +138,53 @@ export const processPayment = async (req: Request, res: Response, next: any) => 
         order.totalPrice
       );
     }
-  } catch (error: any) {
+
+    res.json({
+      message: "Payment successful",
+      order,
+    });
+  } catch (error) {
     next(error);
   }
 };
 
-export const getMyOrders = async (req: Request, res: Response, next: any) => {
+export const getMyOrders = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const userId = (req as any).user._id;
-
-    const orders = await Order.find({ user: userId }).populate("items.product");
+    const orders = await Order.find({ user: req.user?._id }).populate(
+      "items.product"
+    );
 
     res.status(200).json(orders);
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };
 
-export const getAllOrders = async (req: Request, res: Response, next: any) => {
+export const getAllOrders = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const orders = await Order.find()
       .populate("user", "name email")
       .populate("items.product");
 
     res.status(200).json(orders);
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };
 
-export const updateOrderStatus = async (req: Request, res: Response, next: any) => {
+export const updateOrderStatus = async (
+  req: Request<{ id: string }, {}, UpdateOrderStatusBody>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { status } = req.body;
 
@@ -169,7 +199,7 @@ export const updateOrderStatus = async (req: Request, res: Response, next: any) 
     const updatedOrder = await order.save();
 
     res.json(updatedOrder);
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };

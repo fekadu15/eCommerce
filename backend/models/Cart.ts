@@ -12,7 +12,7 @@ export interface ICart extends Document {
   updatedAt: Date;
 }
 
-const cartItemSchema: Schema = new Schema({
+const cartItemSchema = new Schema<ICartItem>({
   product: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
@@ -21,11 +21,11 @@ const cartItemSchema: Schema = new Schema({
   quantity: {
     type: Number,
     required: true,
-    default: 1
+    default:1
   }
 });
 
-const cartSchema: Schema<ICart> = new Schema(
+const cartSchema = new Schema<ICart>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,

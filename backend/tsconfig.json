@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "outDir": "./dist",
     "rootDir": "./",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+     "typeRoots": ["./node_modules/@types", "./types"]
   }
 }

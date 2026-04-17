@@ -1,5 +1,9 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
-
+import {
+  OrderStatus,
+  PaymentStatus,
+  PaymentMethod
+} from "../types/order";
 export interface IOrderItem {
   product: mongoose.Types.ObjectId;
   quantity: number;
@@ -9,10 +13,9 @@ export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
   items: IOrderItem[];
   totalPrice: number;
-  status: "pending" | "shipped" | "delivered";
-
-  paymentStatus: "pending" | "paid" | "failed";
-  paymentMethod: "card" | "cash";
+status: OrderStatus;
+paymentStatus: PaymentStatus;
+paymentMethod: PaymentMethod;
   paidAt?: Date;
 
   createdAt: Date;
