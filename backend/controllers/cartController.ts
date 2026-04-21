@@ -29,7 +29,12 @@ export const addToCart = async (
 
     if (itemIndex > -1) {
       cart.items[itemIndex].quantity += quantity;
+      
+      if (cart.items[itemIndex].quantity <= 0) {
+        cart.items.splice(itemIndex, 1);
+      }
     } else {
+   
       cart.items.push({
         product: new mongoose.Types.ObjectId(productId),
         quantity
@@ -38,7 +43,12 @@ export const addToCart = async (
 
     await cart.save();
 
-    res.json(cart);
+    const populatedCart = await cart.populate({
+      path: "items.product",
+      model: "Product" 
+    });
+
+    res.json(populatedCart);
   } catch (error) {
     next(error);
   }
@@ -79,7 +89,12 @@ export const removeFromCart = async (
 
     await cart.save();
 
-    res.json(cart);
+    const populatedCart = await cart.populate({
+      path: "items.product",
+      model: "Product"
+    });
+
+    res.json(populatedCart);
   } catch (error) {
     next(error);
   }

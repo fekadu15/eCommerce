@@ -9,7 +9,9 @@ export const registerUser = async (
   res: Response,
   next: NextFunction
 ) => {
+
   try {
+    
     const { name, email, password } = req.body;
 
     const emailRegex =
@@ -23,16 +25,14 @@ export const registerUser = async (
 
     if (!name || !password || !email) {
       return res
-        .status(400)
-        .json({ message: "Please provide all required fields" });
+        .status(400).json({ message: "Please provide all required fields" });
     }
 
     const userExists = await User.findOne({ email });
 
     if (userExists) {
       return res
-        .status(400)
-        .json({ message: "User already exists try log in" });
+        .status(400).json({ message: "User already exists try log in" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -45,6 +45,7 @@ export const registerUser = async (
 
     res.status(201).json({
       _id: user._id,
+      role: user.role,
       name: user.name,
       email: user.email,
       token: generateToken(user._id.toString())
@@ -59,6 +60,8 @@ export const loginUser = async (
   res: Response,
   next: NextFunction
 ) => {
+  
+  
   try {
     const { email, password } = req.body;
 
@@ -82,6 +85,7 @@ export const loginUser = async (
       _id: user._id,
       name: user.name,
       email: user.email,
+      role:user.role,
       token: generateToken(user._id.toString())
     });
   } catch (error) {

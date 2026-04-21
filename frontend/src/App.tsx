@@ -1,7 +1,15 @@
 import AppRoutes from "./routes/AppRoutes";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function App() {
-  return <AppRoutes />;
+  return (
+    <Elements stripe={stripePromise}>
+      <AppRoutes />
+    </Elements>
+  );
 }
 
 export default App;

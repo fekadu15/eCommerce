@@ -1,43 +1,84 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { registerUser, loginUser } from "../../api/authApi";
+import type { 
+  LoginBody, 
+  RegisterBody, 
+  ApiError, 
+  UserInfo 
+} from "../../types/auth";
 
 interface AuthState {
-  user: any | null;
+  user: UserInfo | null;
   token: string | null;
   loading: boolean;
   error: string | null;
 }
 
-const savedUser = localStorage.getItem("user");
+const getPersistedUser = (): UserInfo | null => {
+  const user = localStorage.getItem("user");
+  if (!user || user === "undefined") return null;
+  try {
+    return JSON.parse(user) as UserInfo;
+  } catch (e) {
+    return null;
+  }
+};
 
 const initialState: AuthState = {
-  user: savedUser && savedUser !== "undefined" ? JSON.parse(savedUser) : null,
+  user: getPersistedUser(),
   token: localStorage.getItem("token") || null,
   loading: false,
   error: null,
 };
 
-export const register = createAsyncThunk(
+export const register = createAsyncThunk<
+  { user: UserInfo; token: string },
+  RegisterBody,
+  { rejectValue: ApiError }
+>(
   "auth/register",
-  async (userData: any, { rejectWithValue }) => {
+  async (userData, { rejectWithValue }) => {
     try {
-      return await registerUser(userData);
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Registration failed");
+      const data = await registerUser(userData);
+      const user: UserInfo = {
+        _id: data._id,
+        name: data.name,
+        email: data.email,
+        role: data.role
+      };
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      return { user, token: data.token };
+    } catch (err) {
+      return rejectWithValue(err as ApiError);
     }
   }
 );
 
-export const login = createAsyncThunk(
+export const login = createAsyncThunk<
+  { user: UserInfo; token: string },
+  LoginBody,
+  { rejectValue: ApiError }
+>(
   "auth/login",
-  async (userData: any, { rejectWithValue }) => {
+  async (userData, { rejectWithValue }) => {
     try {
       const data = await loginUser(userData);
+      const user: UserInfo = {
+        _id: data._id,
+        name: data.name,
+        email: data.email,
+        role: data.role
+      };
+
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Login failed");
+      localStorage.setItem("user", JSON.stringify(user));
+
+      return { user, token: data.token };
+    } catch (err) {
+      return rejectWithValue(err as ApiError);
     }
   }
 );
@@ -63,12 +104,14 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state) => {
+      .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload?.message || "Registration failed";
       })
       .addCase(login.pending, (state) => {
         state.loading = true;
@@ -81,7 +124,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload?.message || "Login failed";
       });
   },
 });

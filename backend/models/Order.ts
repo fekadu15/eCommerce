@@ -4,6 +4,7 @@ import {
   PaymentStatus,
   PaymentMethod
 } from "../types/order";
+
 export interface IOrderItem {
   product: mongoose.Types.ObjectId;
   quantity: number;
@@ -13,11 +14,11 @@ export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
   items: IOrderItem[];
   totalPrice: number;
-status: OrderStatus;
-paymentStatus: PaymentStatus;
-paymentMethod: PaymentMethod;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
   paidAt?: Date;
-
+  isVisibleToUser: boolean; 
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,11 +49,10 @@ const orderSchema: Schema<IOrder> = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "shipped", "delivered"],
+     
+      enum: ["pending", "shipped", "delivered", "cancelled"],
       default: "pending"
     },
-
-   
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],
@@ -65,8 +65,11 @@ const orderSchema: Schema<IOrder> = new Schema(
     },
     paidAt: {
       type: Date
+    },
+    isVisibleToUser: {
+      type: Boolean,
+      default: true
     }
-
   },
   { timestamps: true }
 );
