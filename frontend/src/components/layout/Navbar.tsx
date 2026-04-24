@@ -92,7 +92,6 @@ const Navbar = () => {
         <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>
           <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/")}>PRODUCTS</Typography>
           <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/order/myorders")}>orders</Typography>
-          <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/about")}>ABOUT</Typography>
           {!user ? (
             <>
               <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/register")}>REGISTER</Typography>
@@ -101,6 +100,8 @@ const Navbar = () => {
           ) : (
             <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/profile")}>ACCOUNT</Typography>
           )}
+          <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/about")}>ABOUT</Typography>
+          
         </Stack>
 
        

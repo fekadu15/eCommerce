@@ -5,13 +5,39 @@ import {
   useStripe, 
   useElements 
 } from "@stripe/react-stripe-js";
-import { Box, Button, Typography, Alert, TextField, Stack, Grid } from "@mui/material";
+
+import type { 
+  StripeCardNumberElementChangeEvent, 
+  StripeCardExpiryElementChangeEvent, 
+  StripeCardCvcElementChangeEvent 
+} from "@stripe/stripe-js";
+
+import { 
+  Box, 
+  Button, 
+  Typography, 
+  Alert, 
+  TextField, 
+  Stack, 
+   Grid 
+} from "@mui/material";
+
 import { useState } from "react";
+import type { FormEvent, ChangeEvent } from "react"; 
+
 import { useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
 import { confirmPaymentOnServer } from "../../api/orderApi";
 import { useNavigate } from "react-router-dom";
 
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message: string;
+}
 
 const stripeInputStyles = {
   p: "18px 12px", 
@@ -19,9 +45,7 @@ const stripeInputStyles = {
   borderRadius: "4px",
   borderBottom: "1px solid rgba(0, 0, 0, 0.42)",
   transition: "all 0.2s ease-in-out",
-  "&:hover": {
-    bgcolor: "#e5e7eb",
-  },
+  "&:hover": { bgcolor: "#e5e7eb" },
   "&:focus-within": {
     bgcolor: "#e5e7eb",
     borderBottom: "2px solid #0047ab", 
@@ -56,14 +80,15 @@ const StripePaymentForm = () => {
 
   const { clientSecret, currentOrder } = useSelector((state: RootState) => state.orders);
 
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [cardError, setCardError] = useState<string | null>(null);
-  const [name, setName] = useState("");
+  const [name, setName] = useState<string>("");
 
   if (!currentOrder || !clientSecret) return null;
 
-
-  const handleStripeChange = (event: any) => {
+  const handleStripeChange = (
+    event: StripeCardNumberElementChangeEvent | StripeCardExpiryElementChangeEvent | StripeCardCvcElementChangeEvent
+  ) => {
     if (event.error) {
       setCardError(event.error.message);
     } else {
@@ -71,11 +96,10 @@ const StripePaymentForm = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!stripe || !elements) return;
 
-  
     if (!name.trim()) {
       setCardError("Cardholder name is required.");
       return;
@@ -84,9 +108,15 @@ const StripePaymentForm = () => {
     setIsProcessing(true);
     setCardError(null);
 
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) {
+      setIsProcessing(false);
+      return;
+    }
+
     const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
-        card: elements.getElement(CardNumberElement)!,
+        card: cardNumberElement,
         billing_details: { name },
       },
     });
@@ -94,12 +124,13 @@ const StripePaymentForm = () => {
     if (error) {
       setCardError(error.message || "Payment Failed");
       setIsProcessing(false);
-    } else if (paymentIntent.status === "succeeded") {
+    } else if (paymentIntent?.status === "succeeded") {
       try {
         await confirmPaymentOnServer({ orderId: currentOrder._id });
-        navigate("/orders/success");
-      } catch (err: any) {
-        setCardError("Order update failed. Please contact support.");
+        navigate("/order/success", { state: { order: currentOrder } });
+      } catch (err) {
+        const error = err as ApiError;
+        setCardError(error.response?.data?.message || "Order update failed. Please contact support.");
         setIsProcessing(false);
       }
     }
@@ -108,8 +139,6 @@ const StripePaymentForm = () => {
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
       <Stack spacing={3}>
-        
-      
         <Box>
           <Typography sx={labelStyles}>Cardholder Name</Typography>
           <TextField
@@ -117,7 +146,8 @@ const StripePaymentForm = () => {
             variant="filled"
             placeholder="YOUR NAME"
             value={name}
-            onChange={(e) => {
+         
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setName(e.target.value);
               if (cardError === "Cardholder name is required.") setCardError(null);
             }}
@@ -137,51 +167,32 @@ const StripePaymentForm = () => {
         <Box>
           <Typography sx={labelStyles}>Card Number</Typography>
           <Box sx={stripeInputStyles}>
-            <CardNumberElement 
-              options={elementOptions} 
-              onChange={handleStripeChange} 
-            />
+            <CardNumberElement options={elementOptions} onChange={handleStripeChange} />
           </Box>
         </Box>
 
-   
         <Grid container spacing={2}>
           <Grid size={8}>
             <Typography sx={labelStyles}>Expiry Date</Typography>
             <Box sx={stripeInputStyles}>
-              <CardExpiryElement 
-                options={elementOptions} 
-                onChange={handleStripeChange} 
-              />
+              <CardExpiryElement options={elementOptions} onChange={handleStripeChange} />
             </Box>
           </Grid>
           
           <Grid size={4}>
             <Typography sx={labelStyles}>CVC</Typography>
             <Box sx={stripeInputStyles}>
-              <CardCvcElement 
-                options={elementOptions} 
-                onChange={handleStripeChange} 
-              />
+              <CardCvcElement options={elementOptions} onChange={handleStripeChange} />
             </Box>
           </Grid>
         </Grid>
 
-    
         {cardError && (
-          <Alert 
-            severity="error" 
-            sx={{ 
-              borderRadius: 1, 
-              fontWeight: 600,
-              '& .MuiAlert-message': { width: "100%" } 
-            }}
-          >
+          <Alert severity="error" sx={{ borderRadius: 1, fontWeight: 600 }}>
             {cardError}
           </Alert>
         )}
 
-      
         <Button
           fullWidth
           variant="contained"
@@ -190,19 +201,13 @@ const StripePaymentForm = () => {
           sx={{ 
             py: 2.2, 
             fontWeight: "900", 
-            fontSize: "1rem",
             bgcolor: "#0047ab", 
             borderRadius: 1,
             mt: 2,
-            boxShadow: 'none',
-            "&:hover": { bgcolor: "#003580", boxShadow: 'none' },
-            "&.Mui-disabled": { bgcolor: "#e0e0e0" }
+            "&:hover": { bgcolor: "#003580" }
           }}
         >
-          {isProcessing 
-            ? "PROCESSING SECURELY..." 
-            : `PAY $${currentOrder.totalPrice.toLocaleString()}`
-          }
+          {isProcessing ? "PROCESSING..." : `PAY $${currentOrder.totalPrice.toLocaleString()}`}
         </Button>
       </Stack>
     </Box>

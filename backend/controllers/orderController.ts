@@ -7,7 +7,7 @@ import { ICartPopulated } from "../types/cart";
 import { CheckoutBody, PaymentBody, UpdateOrderStatusBody } from "../types/order";
 import { createPaymentIntent } from "../utils/paymentService";
 import { sendOrderEmail } from "../utils/emailService";
-
+import { UpdateProfileBody } from "../types/auth";
 export const checkout = async (
   req: Request<{}, {}, CheckoutBody>,
   res: Response,
@@ -64,7 +64,7 @@ export const checkout = async (
         await product.save();
       }
     }
- 
+
     const order = await Order.create({
       user: req.user?._id,
       items: itemsToOrder.map((item) => ({
@@ -77,6 +77,24 @@ export const checkout = async (
     });
 
     const populatedOrder = await Order.findById(order._id).populate("items.product");
+
+    if (paymentMethod === "cash") {
+      const user = await User.findById(req.user?._id);
+      if (user) {
+        try {
+         
+          await sendOrderEmail(
+            user.email,
+            order._id.toString(),
+            order.totalPrice,
+          
+          );
+        } catch (emailErr) {
+          console.error("Cash order email failed:", emailErr);
+          
+        }
+      }
+    }
 
     cart.items = cart.items.filter(
       (item) => !selectedItems.includes(item._id.toString())
@@ -96,7 +114,6 @@ export const createPayment = async (
 ) => {
   try {
     const { orderId } = req.body;
-
     const order = await Order.findById(orderId);
 
     if (!order) {
@@ -120,7 +137,6 @@ export const processPayment = async (
 ) => {
   try {
     const { orderId } = req.body;
-
     const order = await Order.findById(orderId);
 
     if (!order) {
@@ -129,18 +145,16 @@ export const processPayment = async (
 
     order.paymentStatus = "paid";
     order.paidAt = new Date();
-
     await order.save();
 
-  
     const updatedOrder = await Order.findById(order._id).populate("items.product");
-
     const user = await User.findById(order.user);
     if (user) {
       await sendOrderEmail(
         user.email,
         order._id.toString(),
-        order.totalPrice
+        order.totalPrice,
+        
       );
     }
 
@@ -159,9 +173,12 @@ export const getMyOrders = async (
   next: NextFunction
 ) => {
   try {
-    const orders = await Order.find({ user: req.user?._id })
+    const orders = await Order.find({ 
+      user: req.user?._id,
+      isVisibleToUser: { $ne: false } 
+    })
       .populate("items.product")
-      .sort({ createdAt: -1 }); 
+      .sort({ createdAt: -1 });
 
     res.status(200).json(orders);
   } catch (error) {
@@ -193,7 +210,6 @@ export const updateOrderStatus = async (
 ) => {
   try {
     const { status } = req.body;
-
     const order = await Order.findById(req.params.id);
 
     if (!order) {
@@ -208,6 +224,7 @@ export const updateOrderStatus = async (
     next(error);
   }
 };
+
 export const cancelOrder = async (
   req: Request<{ id: string }>,
   res: Response,
@@ -224,16 +241,14 @@ export const cancelOrder = async (
       return res.status(403).json({ message: "You are not authorized to cancel this order" });
     }
 
-  
     if (order.status !== "pending") {
       return res.status(400).json({ message: "Only pending orders can be cancelled" });
     }
 
-  
     for (const item of order.items) {
       const product = await Product.findById(item.product);
       if (product) {
-        product.stock += item.quantity; 
+        product.stock += item.quantity;
         await product.save();
       }
     }

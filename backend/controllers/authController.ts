@@ -86,8 +86,122 @@ export const loginUser = async (
       name: user.name,
       email: user.email,
       role:user.role,
+      addresses: user.addresses || [],
       token: generateToken(user._id.toString())
     });
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateUserProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.user?._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+
+      if (req.body.password) {
+        user.password = await bcrypt.hash(req.body.password, 10);
+      }
+
+      const updatedUser = await user.save();
+      res.status(200).json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        token: generateToken(updatedUser._id.toString()),
+      });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addUserAddress = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (req.body.isDefault) {
+      user.addresses.forEach((addr) => (addr.isDefault = false));
+    }
+
+    user.addresses.push(req.body);
+    const updatedUser = await user.save();
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeUserAddress = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.addresses = user.addresses.filter(
+      (addr) => addr._id.toString() !== req.params.id
+    );
+
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateAddress = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+  
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const address = user.addresses.find(
+      (addr) => addr._id.toString() === req.params.id
+    );
+
+    if (!address) {
+      return res.status(404).json({ message: "Address not found" });
+    }
+
+    if (req.body.isDefault) {
+      user.addresses.forEach((a) => {
+        a.isDefault = false;
+      });
+    }
+
+    Object.assign(address, req.body);
+
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
   } catch (error) {
     next(error);
   }

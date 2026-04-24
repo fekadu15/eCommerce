@@ -10,7 +10,8 @@ import OrderHistory from "../pages/orders/OrderHistory";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import { Box } from "@mui/material";
-
+import SuccessPage from "../pages/orders/SuccessPage"
+import AccountPage from "../pages/Account"
 const AppRoutes = () => {
   return (
     <>
@@ -25,10 +26,11 @@ const AppRoutes = () => {
 
             
             <Route element={<ProtectedRoute />}>
-              <Route path="/profile" element={<div>User Profile Page</div>} />
+              <Route path="/profile" element={<AccountPage />} />
               <Route path="/cart" element={<Cart />} /> 
               <Route path="/order/myorders" element={<OrderHistory/>} /> 
               <Route path="/order/checkout" element={<Checkout />} /> 
+              <Route path="/order/success" element={<SuccessPage />} />
             </Route>
 
             

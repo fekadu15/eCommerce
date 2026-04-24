@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 export const sendOrderEmail = async (
   to: string,
   orderId: string,
-  total: number
+  total: number,
 ) => {
   await transporter.sendMail({
     from: process.env.EMAIL_USER,

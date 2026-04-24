@@ -32,7 +32,6 @@ const ProductCard = ({ product }: Props) => {
         },
       }}
     >
-      {/* Image Section */}
       <Box
         sx={{
           position: "relative",

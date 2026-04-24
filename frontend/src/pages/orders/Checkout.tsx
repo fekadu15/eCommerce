@@ -32,7 +32,6 @@ const Checkout = () => {
 
   const [method, setMethod] = useState<PaymentMethod>("card");
 
-  // Fetch cart if missing on refresh
   useEffect(() => {
     if (!cart && !cartLoading) {
       dispatch(fetchCart());
@@ -47,9 +46,11 @@ const Checkout = () => {
 
   const handleCheckout = async () => {
     if (!cart || cart.items.length === 0) return;
+ 
     const selectedItemIds = cart.items.map((item) => item._id);
 
     try {
+  
       const order = await dispatch(
         processCheckout({
           paymentMethod: method,
@@ -60,7 +61,7 @@ const Checkout = () => {
       if (method === "card") {
         await dispatch(fetchPaymentSecret({ orderId: order._id })).unwrap();
       } else {
-        navigate("/orders/success");
+        navigate("/order/success", { state: { order } });
       }
     } catch (err) {
       console.error("Checkout sequence failed", err);
@@ -76,7 +77,6 @@ const Checkout = () => {
       )}
       
       <Grid container spacing={8}>
-        
         <Grid size={{ xs: 12, md: 7 }}>
           <Typography variant="h4" fontWeight="900" gutterBottom sx={{ letterSpacing: "-0.02em" }}>
             Payment Details
@@ -92,7 +92,8 @@ const Checkout = () => {
             bgcolor: "#fff", 
             borderRadius: 1, 
             border: "1px solid #f0f0f0",
-            minHeight: "200px" 
+            minHeight: "200px",
+            mt: 2
           }}>
             {method === "card" ? (
               clientSecret ? (
@@ -111,7 +112,8 @@ const Checkout = () => {
                   CASH ON DELIVERY
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  You will pay the total amount in cash when the package is delivered to your door.
+                  You will pay the total amount in cash when the package is delivered to your door. 
+                  A confirmation email will be sent shortly.
                 </Typography>
               </Box>
             )}
@@ -125,7 +127,6 @@ const Checkout = () => {
             >
               ← RETURN TO CART
             </Button>
-            
             {!clientSecret && (
               <Button
                 variant="contained"
@@ -141,15 +142,13 @@ const Checkout = () => {
                   "&:hover": { bgcolor: "#003580" }
                 }}
               >
-                {orderLoading ? "PROCESSING..." : "REVIEW ORDER"}
+                {orderLoading ? "PROCESSING..." : method === "card" ? "CONFIRM & PAY" : "PLACE CASH ORDER"}
               </Button>
             )}
           </Box>
         </Grid>
 
-        
         <Grid size={{ xs: 12, md: 5 }}>
-          
           {cart && cart.items.length > 0 ? (
             <OrderSummary /> 
           ) : (
