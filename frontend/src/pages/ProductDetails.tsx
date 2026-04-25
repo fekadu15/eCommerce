@@ -1,26 +1,30 @@
 import { useEffect, useCallback, useState } from "react"; 
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, Alert, Stack, Snackbar } from "@mui/material"; 
-import Grid from "@mui/material/Grid";
+import { 
+   Typography, 
+   Alert, 
+   Snackbar,
+   Box
+  } from "@mui/material"; 
+  import Grid from "@mui/material/Grid2";
 
 import type { AppDispatch, RootState } from "../app/store";
 import { fetchProductById, clearProduct } from "../features/product/productSlice";
 import { addItemToCart } from "../features/cart/cartSlice";
 
-import type { Product, Review } from "../types/product";
+import type { Product } from "../types/product";
 
 import ProductLayout from "../components/products/ProductLayout";
 import Loading from "../components/common/Loading";
 import ProductInfo from "../components/products/ProductInfo";
-import ReviewCard from "../components/products/ReviewCard";
+import ReviewSection from "../components/products/reviews/ReviewSection";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
- 
   const [open, setOpen] = useState(false);
 
   const { product, products, loading, error } = useSelector(
@@ -48,7 +52,6 @@ const ProductDetails = () => {
         })
       );
 
-      
       if (addItemToCart.fulfilled.match(resultAction)) {
         setOpen(true);
       }
@@ -61,7 +64,7 @@ const ProductDetails = () => {
     setOpen(false);
   };
 
-  if (loading) return <Loading message="Fetching product details..." />;
+  if (loading && !product) return <Loading message="Fetching product details..." />;
 
   if (error) {
     return (
@@ -86,6 +89,7 @@ const ProductDetails = () => {
   return (
     <ProductLayout>
       <Box sx={{ py: 6 }}>
+        {/* Main Product Section */}
         <Grid container spacing={8}>
           <Grid size={{ xs: 12, md: 6 }}>
             <Box
@@ -107,37 +111,10 @@ const ProductDetails = () => {
           </Grid>
         </Grid>
 
-        <Box sx={{ mt: 10 }}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={4}
-          >
-            <Typography variant="h5" fontWeight="bold">
-              Customer Reviews
-            </Typography>
-
-            <Typography
-              color="primary"
-              fontWeight="bold"
-              sx={{ cursor: "pointer", textDecoration: "underline" }}
-            >
-              WRITE A REVIEW
-            </Typography>
-          </Stack>
-
-          <Grid container spacing={3}>
-            {(product.reviews || []).map((review: Review) => (
-              <Grid size={{ xs: 12, md: 4 }} key={review._id}>
-                <ReviewCard review={review} />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+        <ReviewSection product={product} />
 
         <Box sx={{ mt: 10 }}>
-          <Typography variant="h5" fontWeight="bold" mb={4}>
+          <Typography variant="h5" fontWeight="900" mb={4}>
             Complete the Collection
           </Typography>
 
@@ -160,9 +137,11 @@ const ProductDetails = () => {
                         borderRadius: 1,
                         bgcolor: "#f6f7fb",
                         mb: 1,
+                        aspectRatio: "1/1",
+                        objectFit: "cover"
                       }}
                     />
-                    <Typography variant="subtitle2" fontWeight="bold">
+                    <Typography variant="subtitle2" fontWeight="900">
                       {item.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -175,7 +154,6 @@ const ProductDetails = () => {
         </Box>
       </Box>
 
-      
       <Snackbar 
         open={open} 
         autoHideDuration={4000} 

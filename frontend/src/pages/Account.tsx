@@ -1,4 +1,4 @@
-import { Container,Grid, Box, Typography } from "@mui/material";
+import { Container, Box, Typography } from "@mui/material";
 import AccountSidebar from "../components/account/AccountSidebar";
 import RecentOrders from "../components/account/RecentOrders";
 import ProfileSettings from "../components/account/ProfileSettings";
@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchMyOrders } from "../features/order/orderSlice";
 import type { AppDispatch } from "../app/store";
+import Grid from "@mui/material/Grid2";
 
 const AccountPage = () => {
   const dispatch = useDispatch<AppDispatch>();

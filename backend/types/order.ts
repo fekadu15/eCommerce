@@ -1,5 +1,4 @@
-
-export type OrderStatus = "pending" | "shipped" | "delivered" | "cancelled";
+export type OrderStatus = "pending" | "in_transit" | "shipped" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type PaymentMethod = "card" | "cash";
 export interface CheckoutBody {
@@ -37,4 +36,10 @@ export interface OrderState {
   clientSecret: string | null;
   loading: boolean;
   error: string | null;
+}
+export interface SellerOrderStats {
+  totalOrders: number;
+  pendingFulfillment: number;
+  inTransit: number;
+  totalRevenue: number;
 }

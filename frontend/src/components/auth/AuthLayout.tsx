@@ -1,5 +1,5 @@
 import { Box, Typography, Paper, Avatar, Stack } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (

@@ -261,3 +261,59 @@ export const cancelOrder = async (
     next(error);
   }
 };
+
+export const getSellerOrders = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const sellerId = req.user?._id;
+
+    const orders = await Order.find()
+      .populate({
+        path: "items.product",
+        match: { seller: sellerId }
+      })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+    const sellerSpecificOrders = orders
+      .filter(order => order.items.some(item => item.product !== null))
+      .map(order => {
+        const plainOrder = order.toObject(); 
+        plainOrder.items = plainOrder.items.filter(item => item.product !== null);
+        return plainOrder;
+      });
+
+    res.status(200).json(sellerSpecificOrders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSellerStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.user?._id;
+
+    const orders = await Order.find().populate({
+      path: "items.product",
+      match: { seller: sellerId }
+    });
+
+    const sellerOrders = orders.filter(order => 
+      order.items.some(item => item.product !== null)
+    );
+
+    const stats = {
+      totalOrders: sellerOrders.length,
+      pendingFulfillment: sellerOrders.filter(o => o.status === "pending").length,
+      inTransit: sellerOrders.filter(o => o.status === "in_transit").length,
+      totalRevenue: sellerOrders.reduce((acc, curr) => acc + curr.totalPrice, 0) 
+      
+    };
+
+    res.status(200).json(stats);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -44,7 +44,7 @@ const OrderHistory = () => {
           <Typography variant="h6" mb={2}>You haven't placed any orders yet.</Typography>
           <Button 
             variant="contained" 
-            onClick={() => navigate('/products')}
+            onClick={() => navigate('/')}
             sx={{ bgcolor: '#0047ab', fontWeight: '900' }}
           >
             Start Shopping

@@ -1,10 +1,19 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as api from "../../api/orderApi";
-import type { Order, OrderState, CheckoutBody, PaymentBody } from "../../types/order";
+import type { 
+  Order,
+  OrderState,
+  CheckoutBody,
+  PaymentBody ,
+  SellerOrderStats,
+  OrderStatus
+} from "../../types/order";
 import type { ApiError } from "../../types/product";
 
 const initialState: OrderState = {
-  orders: [],
+  orders: [],         
+  sellerOrders: [],   
+  stats: null,    
   currentOrder: null,
   clientSecret: null,
   loading: false,
@@ -76,16 +85,47 @@ export const fetchAllOrders = createAsyncThunk<
   Order[],
   void,
   { rejectValue: ApiError }
->("orders/fetchAll", async (_, { rejectWithValue }) => {
+>("orders", async (_, { rejectWithValue }) => {
   try {
  
-    return await api.getMyOrders(); 
+    return await api.getAllOrders(); 
   } catch (err) {
     return rejectWithValue(err as ApiError);
   }
 });
 
+export const fetchSellerOrders = createAsyncThunk<Order[], void, { rejectValue: ApiError }>(
+  "orders/fetchSellerOrders",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await api.getSellerOrders();
+    } catch (err) {
+      return rejectWithValue(err as ApiError);
+    }
+  }
+);
 
+export const fetchSellerStats = createAsyncThunk<SellerOrderStats, void, { rejectValue: ApiError }>(
+  "orders/fetchStats",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await api.getSellerStats();
+    } catch (err) {
+      return rejectWithValue(err as ApiError);
+    }
+  }
+);
+
+export const updateStatusAction = createAsyncThunk<Order, { id: string; status: OrderStatus }, { rejectValue: ApiError }>(
+  "orders/updateStatus",
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      return await api.updateOrderStatus(id, status);
+    } catch (err) {
+      return rejectWithValue(err as ApiError);
+    }
+  }
+);
 
 const slice = createSlice({
   name: "orders",
@@ -162,7 +202,19 @@ const slice = createSlice({
       .addCase(cancelOrderAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Cancellation failed";
-      });
+      })
+      .addCase(fetchSellerOrders.fulfilled, (state, action) => {
+       state.loading = false;
+       state.sellerOrders = action.payload; 
+      })
+       .addCase(fetchSellerStats.fulfilled, (state, action) => {
+       state.stats = action.payload;
+      })
+      .addCase(updateStatusAction.fulfilled, (state, action) => {
+       state.sellerOrders = state.sellerOrders.map((o) => 
+       o._id === action.payload._id ? action.payload : o
+     );
+     })
   }
 });
 

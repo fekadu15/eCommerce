@@ -1,6 +1,6 @@
-import type { Product, ApiError } from "./product";
+import type { Product,ApiError } from "./product";
 
-export type OrderStatus = "pending" | "shipped" | "delivered" | "cancelled";
+export type OrderStatus = "pending" | "in_transit" | "shipped" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type PaymentMethod = "card" | "cash";
 
@@ -22,9 +22,13 @@ export interface Order {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
+  avatar?: string;
+  shippingAddress?: string;
+  trackingNumber?: string;
   paidAt?: string;
   createdAt: string;
   updatedAt: string;
+  
 }
 
 export interface CheckoutBody {
@@ -37,9 +41,17 @@ export interface PaymentBody {
 }
 
 export interface OrderState {
-  orders: Order[];
+  orders: Order[];         
+  sellerOrders: Order[];    
+  stats: SellerOrderStats | null; 
   currentOrder: Order | null;
   clientSecret: string | null;
   loading: boolean;
   error: string | null;
+}
+export interface SellerOrderStats {
+  totalOrders: number;
+  pendingFulfillment: number;
+  inTransit: number;
+  totalRevenue: number;
 }

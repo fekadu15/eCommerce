@@ -1,8 +1,9 @@
 import { 
   Box, Typography, Stack, Paper, Button, Chip, 
-  Grid, Dialog, DialogTitle, DialogContent, 
+   Dialog, DialogTitle, DialogContent, 
   DialogActions, TextField, Checkbox, FormControlLabel 
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { LocationOnOutlined, Add } from "@mui/icons-material";
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";

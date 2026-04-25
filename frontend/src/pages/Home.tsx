@@ -7,7 +7,7 @@ import {
   Stack,
   Container,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../app/store";
 import { fetchAllProducts } from "../features/product/productSlice";

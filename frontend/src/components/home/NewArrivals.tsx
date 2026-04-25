@@ -1,5 +1,5 @@
 import { Box, Typography, Stack, IconButton } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import type { Product } from "../../types/product";
 import ProductCard from "../products/ProductCard";

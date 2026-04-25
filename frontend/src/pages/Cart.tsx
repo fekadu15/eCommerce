@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, Container, Alert, Stack } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 
 import type { AppDispatch, RootState } from "../app/store";
 import { fetchCart } from "../features/cart/cartSlice";

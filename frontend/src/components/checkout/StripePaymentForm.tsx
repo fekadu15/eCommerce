@@ -19,8 +19,8 @@ import {
   Alert, 
   TextField, 
   Stack, 
-   Grid 
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 
 import { useState } from "react";
 import type { FormEvent, ChangeEvent } from "react"; 
