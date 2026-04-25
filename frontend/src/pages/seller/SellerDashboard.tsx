@@ -27,7 +27,7 @@ const SellerDashboard = () => {
 
 
   const handlePendingClick = () => {
-    navigate('/seller/orders');
+    navigate('/seller/orders?status=pending');
   };
 
   return (

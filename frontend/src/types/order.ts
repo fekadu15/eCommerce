@@ -1,4 +1,4 @@
-import type { Product,ApiError } from "./product";
+import type { Product,} from "./product";
 
 export type OrderStatus = "pending" | "in_transit" | "shipped" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";

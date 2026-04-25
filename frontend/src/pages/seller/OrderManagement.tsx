@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"; 
 import { Typography, Container, Stack, CircularProgress, Box, Paper } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import { fetchSellerOrders, fetchSellerStats } from "../../features/order/orderSlice";
 import type { AppDispatch, RootState } from "../../app/store";
 
@@ -11,6 +12,7 @@ import OrderPagination from "../../components/seller/orders/OrderPagination";
 
 const OrderManagement = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const [searchParams] = useSearchParams(); 
   const [tabValue, setTabValue] = useState(0);
 
   const { sellerOrders, loading } = useSelector((state: RootState) => state.orders);
@@ -18,8 +20,16 @@ const OrderManagement = () => {
   useEffect(() => {
     dispatch(fetchSellerOrders());
     dispatch(fetchSellerStats());
-  }, [dispatch]);
 
+    const statusFilter = searchParams.get("status");
+    if (statusFilter === "pending") {
+      setTabValue(1); 
+    } else if (statusFilter === "shipped") {
+      setTabValue(2);
+    } else if (statusFilter === "delivered") {
+      setTabValue(3);
+    }
+  }, [dispatch, searchParams]); 
 
   const filteredOrders = sellerOrders.filter((order) => {
     if (tabValue === 1) return order.status === "pending";
@@ -39,7 +49,8 @@ const OrderManagement = () => {
       </Typography>
 
       <OrderStats />
-      <OrderFilters currentTab={tabValue} onTabChange={setTabValue} />
+      
+      <OrderFilters currentTab={tabValue} onTabChange={(newVal: number) => setTabValue(newVal)} />
 
       <Stack spacing={2} sx={{ mt: 3 }}>
         {loading && sellerOrders.length === 0 ? (

@@ -1,5 +1,5 @@
 import { Paper, Typography, Button, Stack, Box, List, ListItemIcon, ListItemText, ListItemButton } from "@mui/material";
-import { AddBoxOutlined, FileDownloadOutlined, HeadsetMicOutlined, Bolt } from "@mui/icons-material";
+import { AddBoxOutlined, FileDownloadOutlined, Bolt } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 const QuickActions = () => {
@@ -8,7 +8,7 @@ const QuickActions = () => {
   const links = [
     { label: "Add New Product", icon: <AddBoxOutlined />, path: "/seller/edit-product" },
     { label: "Export Sales Report", icon: <FileDownloadOutlined />, path: "#" },
-    { label: "Customer Support", icon: <HeadsetMicOutlined />, path: "#" },
+    
   ];
 
   return (

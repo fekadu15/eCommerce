@@ -1,11 +1,16 @@
 import { Request, Response, NextFunction } from "express";
-import Product from "../models/Product";
+import {Types} from "mongoose";
+import Product, { IProduct } from "../models/Product";
 import {
   CreateProductBody,
   UpdateProductBody,
   CreateReviewBody
 } from "../types/product";
-
+type ProductFilter = {
+  seller?: {
+    $ne?: Types.ObjectId;
+  };
+};
 export const createProduct = async (
   req: Request<{}, {}, CreateProductBody>,
   res: Response,
@@ -45,7 +50,13 @@ export const getProducts = async (
   next: NextFunction
 ) => {
   try {
-    const products = await Product.find().populate(
+    const filter: ProductFilter = {};
+
+    if (req.user?._id) {
+      filter.seller = { $ne: req.user._id };
+    }
+
+    const products = await Product.find(filter).populate(
       "seller",
       "name email"
     );
@@ -55,7 +66,6 @@ export const getProducts = async (
     next(error);
   }
 };
-
 export const getProductById = async (
   req: Request<{ id: string }>,
   res: Response,

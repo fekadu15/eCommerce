@@ -3,7 +3,7 @@ import {
   Box, Typography, Stack, InputBase, Badge, IconButton, 
   Dialog, DialogTitle, DialogContent, DialogActions, Button 
 } from "@mui/material";
-import { Search, LocalMallOutlined, PersonOutline, LogoutOutlined } from "@mui/icons-material";
+import { Search, LocalMallOutlined, PersonOutline, LogoutOutlined, GridViewRounded } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../app/store";
@@ -57,9 +57,22 @@ const Navbar = () => {
           </Box>
         </Stack>
 
-        <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>
+        <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center' }}>
           <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/")}>PRODUCTS</Typography>
           <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/order/myorders")}>ORDERS</Typography>
+          
+  
+          {user?.role === "seller" && (
+            <Typography 
+              variant="body2" 
+              sx={{ ...navLinkStyle, color: "#0047ab", display: 'flex', alignItems: 'center', gap: 0.5 }} 
+              onClick={() => navigate("/seller/dashboard")}
+            >
+              <GridViewRounded sx={{ fontSize: 16 }} />
+              DASHBOARD
+            </Typography>
+          )}
+
           {!user ? (
             <>
               <Typography variant="body2" sx={navLinkStyle} onClick={() => navigate("/register")}>REGISTER</Typography>

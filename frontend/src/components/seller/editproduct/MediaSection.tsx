@@ -1,12 +1,13 @@
 import React, { useRef } from "react";
-import { Paper, Box, Typography, Button, Stack } from "@mui/material";
+import { Paper, Box, Typography, Button, Stack, FormHelperText } from "@mui/material";
 
 interface MediaSectionProps {
   image: string;
   onImageChange: (base64: string) => void;
+  error?: string;
 }
 
-const MediaSection = ({ image, onImageChange }: MediaSectionProps) => {
+const MediaSection = ({ image, onImageChange, error }: MediaSectionProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleReplaceClick = () => {
@@ -27,10 +28,18 @@ const MediaSection = ({ image, onImageChange }: MediaSectionProps) => {
 
   return (
     <Stack spacing={3}>
-      <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: "1px solid #eee" }}>
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: 4, 
+          borderRadius: 3, 
+          border: error ? "1px solid #d32f2f" : "1px solid #eee", 
+          transition: "border 0.2s ease-in-out"
+        }}
+      >
         <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
-          <Typography variant="caption" fontWeight="800" color="text.secondary">
-            PRIMARY VISUAL
+          <Typography variant="caption" fontWeight="800" color={error ? "#d32f2f" : "text.secondary"}>
+            PRIMARY VISUAL {error && "— REQUIRED"}
           </Typography>
           
           <input
@@ -65,7 +74,8 @@ const MediaSection = ({ image, onImageChange }: MediaSectionProps) => {
             alignItems: "center", 
             justifyContent: "center", 
             overflow: "hidden", 
-            position: 'relative' 
+            position: 'relative',
+            border: error ? "2px solid #d32f2f" : "none" 
           }}
         >
           {image ? (
@@ -82,8 +92,13 @@ const MediaSection = ({ image, onImageChange }: MediaSectionProps) => {
           )}
         </Box>
 
+        {error && (
+          <FormHelperText error sx={{ fontWeight: 800, mt: 1, fontSize: "0.75rem" }}>
+            {error}
+          </FormHelperText>
+        )}
+
         <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-         
           <Box 
             sx={{ 
               width: 70, 
@@ -103,7 +118,6 @@ const MediaSection = ({ image, onImageChange }: MediaSectionProps) => {
             )}
           </Box>
 
-          {/* Placeholder/Add buttons */}
           {[1, 2].map((i) => (
             <Box 
               key={i} 
@@ -128,7 +142,6 @@ const MediaSection = ({ image, onImageChange }: MediaSectionProps) => {
         </Stack>
       </Paper>
 
-      {/* Visibility Toggle Card */}
       <Paper 
         elevation={0} 
         sx={{ 
